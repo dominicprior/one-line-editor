@@ -4,6 +4,7 @@ import Data.IORef
 import qualified Graphics.UI.Threepenny as UI
 import qualified Graphics.UI.Threepenny.SVG  as SVG
 import Graphics.UI.Threepenny.Core
+
 main = startGUI defaultConfig setup
 
 infixl 8 #++
@@ -20,23 +21,17 @@ setup w = do
     context <- SVG.svg
         # set SVG.width "300"
         # set SVG.height "100" #++ [elemCircle]
-    out1  <- UI.span # set text ""
-    out2  <- UI.span # set text ""
-    bar <- UI.span # set text "|" # set style [("color", "red")]
+    out1  <- string ""
+    out2  <- string ""
+    bar   <- string "|" # set style [("color", "red")]
     sp <- UI.span #. "sp" #++ [out1, bar, out2]
-    wrap <- UI.div #. "wrap"
-        # set style [("width","300px"),("height","300px"),("border","solid black 1px"),
-                     ("position", "absolute")]
-        #++ [sp]
     svgWrap <- UI.div #. "svgwrap"
-        # set style [("width","300px"),("height","300px"), ("position", "absolute")
-                      ]
+        # set style [("width","300px"),("height","300px"), ("position", "absolute")]
         #++ [context]
     getBody w #++ [sp, svgWrap]
     b <- getBody w
 
-    --on UI.mousemove wrap $ fmouse out
-    on my_keydown b $ fdown r1 r2 out1 out2 elemCircle
+    on UI.keydown b $ fdown r1 r2 out1 out2 elemCircle
     on my_keypress b $ fpress r1 out1 elemCircle
 
 fdown :: IORef [Char] -> IORef [Char] -> Element -> Element -> Element -> Int -> UI Element
@@ -75,15 +70,3 @@ moveBlob circ = do
 -- | Key pressed while element has focus.
 my_keypress :: Element -> Event Char
 my_keypress = fmap (toEnum . read . head . unsafeFromJSON) . domEvent "keypress"
-
--- | Key pressed while element has focus.
-my_keydown :: Element -> Event UI.KeyCode
-my_keydown = fmap unsafeFromJSON . domEvent "keydown"
-
-fmouse :: Element -> (Int,Int) -> UI Element
-fmouse el xy = element el # set text ("hello!!! " ++ show xy)
-
-
-
-
-
